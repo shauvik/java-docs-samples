@@ -24,6 +24,7 @@
         <module>bigquery</module>
         <module>cloud-storage/xml-api/cmdline-sample</module>
         <module>cloud-storage/xml-api/serviceaccount-appengine-sample</module>
+        <module>hadoop</module>
     </modules>
 
     <build>
