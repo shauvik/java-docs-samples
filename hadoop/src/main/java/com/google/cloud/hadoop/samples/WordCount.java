@@ -1,10 +1,12 @@
 package com.google.cloud.hadoop.samples;
 
+// CHECKSTYLE:OFF
 import static com.google.api.services.datastore.client.DatastoreHelper.KEY_PROPERTY_NAME;
 import static com.google.api.services.datastore.client.DatastoreHelper.makeFilter;
 import static com.google.api.services.datastore.client.DatastoreHelper.makeKey;
 import static com.google.api.services.datastore.client.DatastoreHelper.makeProperty;
 import static com.google.api.services.datastore.client.DatastoreHelper.makeValue;
+// CHECKSTYLE:ON
 
 import com.google.api.services.datastore.DatastoreV1.Entity;
 import com.google.api.services.datastore.DatastoreV1.Key;
@@ -30,19 +32,28 @@ import org.apache.hadoop.util.GenericOptionsParser;
 import java.io.IOException;
 
 /**
- * Sample program to run the Hadoop Wordcount example
+ * Sample program to run the Hadoop Wordcount example.
  */
-public class WordCount {
-  // The kind of output entities for wordcount.
+public final class WordCount {
+  /**
+   * Utility class should not be constructed.
+   */
+  private WordCount() { }
+
+  /**
+   * The kind of output entities for wordcount.
+   */
   static final String OUTPUT_KIND_NAME = "mapred.datastore.samples.output.kind";
 
   /**
    * The mapper function for word count.
    */
-  public static class Map extends Mapper<DatastoreKey, DatastoreEntity, Text, IntWritable> {
+  public static class Map
+      extends Mapper<DatastoreKey, DatastoreEntity, Text, IntWritable> {
     @Override
-    public void map(DatastoreKey key, DatastoreEntity value, Context context) throws IOException,
-        InterruptedException {
+    @SuppressWarnings("checkstyle:finalparameters")
+    public void map(DatastoreKey key, DatastoreEntity value, Context context)
+        throws IOException, InterruptedException {
       // Iterate over Entity properties.
       for (Property prop : value.get().getPropertyList()) {
         // If Entity has a property line.
@@ -64,10 +75,12 @@ public class WordCount {
   /**
    * Reducer function for word count.
    */
-  public static class Reduce extends Reducer<Text, IntWritable, DatastoreKey, DatastoreEntity> {
+  public static class Reduce
+      extends Reducer<Text, IntWritable, DatastoreKey, DatastoreEntity> {
     @Override
-    public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException,
-        InterruptedException {
+    @SuppressWarnings("checkstyle:finalparameters")
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
+        throws IOException, InterruptedException {
       // Get total count for word.
       int sum = 0;
       for (IntWritable val : values) {
@@ -91,11 +104,13 @@ public class WordCount {
     }
   }
 
-  // Print a usage statement and exit.
+  /**
+   * Print a usage statement and exit.
+   */
   private static void printUsageAndExit() {
     System.out.print(
-        "Usage: hadoop jar datastore_wordcount.jar [datasetId] [inputKindName] [outputKindName]"
-            + " [jobName].  " + "Please enter all parameters");
+        "Usage: hadoop jar datastore_wordcount.jar [datasetId] [inputKindName] "
+        + "[outputKindName] [jobName].  " + "Please enter all parameters");
     System.exit(1);
   }
 
@@ -103,7 +118,9 @@ public class WordCount {
    * Configures and runs a WordCount job over the Cloud Datastore connector.
    *
    * @param args a String[] containing your datasetId
+   * @throws Exception if something unrecoverable occurs.
    */
+  @SuppressWarnings({"checkstyle:magicnumber", "checkstyle:finalparameters"})
   public static void main(String[] args) throws Exception {
     GenericOptionsParser parser = new GenericOptionsParser(args);
     args = parser.getRemainingArgs();
@@ -138,8 +155,10 @@ public class WordCount {
     KindExpression.Builder kind = KindExpression.newBuilder();
     kind.setName(inputKindName);
     q.addKind(kind);
-    q.setFilter(makeFilter(KEY_PROPERTY_NAME, PropertyFilter.Operator.HAS_ANCESTOR,
-        makeValue(makeKey(inputKindName, WordCountSetUp.ANCESTOR_ENTITY_VALUE))));
+    q.setFilter(makeFilter(
+        KEY_PROPERTY_NAME, PropertyFilter.Operator.HAS_ANCESTOR,
+        makeValue(makeKey(
+            inputKindName, WordCountSetUp.ANCESTOR_ENTITY_VALUE))));
     String query = TextFormat.printToString(q);
 
     // Set parameters for DatastoreHadoopInputFormat.
@@ -147,7 +166,8 @@ public class WordCount {
 
     // Set parameters for DatastoreHadoopInputFormat.
     String numEntitiesInBatch = "100";
-    DatastoreHadoopOutputFormat.setOutputSpecs(job, datasetId, numEntitiesInBatch);
+    DatastoreHadoopOutputFormat.setOutputSpecs(
+        job, datasetId, numEntitiesInBatch);
 
     job.waitForCompletion(true);
   }

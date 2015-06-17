@@ -193,6 +193,8 @@
          annotation. This is needed to suppress warnings on imports, which
          SuppressWarnings doesn't support. -->
     <module name="SuppressWithNearbyCommentFilter"/>
+    <!-- Suppress warnings on a whole block via start and end comments -->
+    <module name="SuppressionCommentFilter"/>
 
     <!-- Checks properties file for a duplicated properties. -->
     <!-- See http://checkstyle.sourceforge.net/config_misc.html#UniqueProperties -->

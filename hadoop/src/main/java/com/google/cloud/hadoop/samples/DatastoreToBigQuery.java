@@ -1,9 +1,11 @@
 package com.google.cloud.hadoop.samples;
 
+// CHECKSTYLE:OFF
 import static com.google.api.services.datastore.client.DatastoreHelper.KEY_PROPERTY_NAME;
 import static com.google.api.services.datastore.client.DatastoreHelper.makeFilter;
 import static com.google.api.services.datastore.client.DatastoreHelper.makeKey;
 import static com.google.api.services.datastore.client.DatastoreHelper.makeValue;
+// CHECKSTYLE:ON
 
 import com.google.api.services.datastore.DatastoreV1.KindExpression;
 import com.google.api.services.datastore.DatastoreV1.Property;
@@ -28,17 +30,25 @@ import org.apache.hadoop.util.GenericOptionsParser;
 import java.io.IOException;
 
 /**
- * Sample program to run the Hadoop Wordcount example reading from Datastore and exporting to
- * BigQuery.
+ * Sample program to run the Hadoop Wordcount example reading from Datastore and
+ * exporting to BigQuery.
  */
-public class DatastoreToBigQuery {
+public final class DatastoreToBigQuery {
+
+  /**
+   * This is a utility class, so should never be constructed.
+   */
+  private DatastoreToBigQuery() { }
+
   /**
    * The mapper function for word count takes a Datastore Entity.
    */
-  public static class Map extends Mapper<DatastoreKey, DatastoreEntity, Text, IntWritable> {
+  public static class Map
+      extends Mapper<DatastoreKey, DatastoreEntity, Text, IntWritable> {
     @Override
-    public void map(DatastoreKey key, DatastoreEntity value, Context context) throws IOException,
-        InterruptedException {
+    @SuppressWarnings("checkstyle:finalparameters")
+    public void map(DatastoreKey key, DatastoreEntity value, Context context)
+        throws IOException, InterruptedException {
       // Iterate over Entity properties.
       for (Property prop : value.get().getPropertyList()) {
         // If Entity has a property line.
@@ -58,12 +68,15 @@ public class DatastoreToBigQuery {
   }
 
   /**
-   * Reducer function for word count writes a JsonObject that represents a BigQuery object.
+   * Reducer function for word count writes a JsonObject that represents a
+   * BigQuery object.
    */
-  public static class Reduce extends Reducer<Text, IntWritable, Text, JsonObject> {
+  public static class Reduce
+      extends Reducer<Text, IntWritable, Text, JsonObject> {
     @Override
-    public void reduce(Text key, Iterable<IntWritable> values, Context context) throws IOException,
-        InterruptedException {
+    @SuppressWarnings("checkstyle:finalparameters")
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
+        throws IOException, InterruptedException {
       // Get total count for word.
       int sum = 0;
       for (IntWritable val : values) {
@@ -80,21 +93,27 @@ public class DatastoreToBigQuery {
     }
   }
 
-  // Print a usage statement and exit with an error code (1).
+  /**
+   * Print a usage statement and exit with an error code (1).
+   */
   private static void printUsageAndExit() {
     System.out.println(
-        "Usage: hadoop jar datastoretobigquery_wordcount.jar [datasetId] [projectId] "
-            + " [outputDatasetId] [outputTableId] [inputKindName] [jobName].  "
+        "Usage: hadoop jar datastoretobigquery_wordcount.jar "
+            + "[datasetId] [projectId] "
+            + "[outputDatasetId] [outputTableId] [inputKindName] [jobName].  "
             + "Please enter all parameters");
     System.exit(1);
   }
 
   /**
-   * Configures and runs a WordCount job reading from the Cloud Datastore and writing to BigQuery.
+   * Configures and runs a WordCount job reading from the Cloud Datastore and
+   * writing to BigQuery.
    *
-   * @param args a String[] containing your datasetId, your projectId, your outputDatasetId, and
-   *        your outputTableId.
+   * @param args a String[] containing your datasetId, your projectId, your
+   *   outputDatasetId, and your outputTableId.
+   * @throws Exception should anything go wrong.
    */
+  @SuppressWarnings({"checkstyle:finalparameters", "checkstyle:magicnumber"})
   public static void main(String[] args) throws Exception {
 
     GenericOptionsParser parser = new GenericOptionsParser(args);
@@ -114,15 +133,19 @@ public class DatastoreToBigQuery {
     String jobName = args[5];
 
     // Check that projectId, output dataset and output table are not empty.
-    if ("".equals(projectId) || "".equals(outputDatasetId) || "".equals(outputTableId)) {
+    if ("".equals(projectId)
+        || "".equals(outputDatasetId)
+        || "".equals(outputTableId)) {
       printUsageAndExit();
     }
 
     // Set default parameters for this program
-    String fields = "[{'name': 'Word','type': 'STRING'},{'name': 'Number','type': 'INTEGER'}]";
+    String fields = "[{'name': 'Word','type': 'STRING'},"
+        + "{'name': 'Number','type': 'INTEGER'}]";
 
     // Configure Map Reduce for WordCount job.
-    JobConf conf = new JobConf(parser.getConfiguration(), DatastoreToBigQuery.class);
+    JobConf conf = new JobConf(
+        parser.getConfiguration(), DatastoreToBigQuery.class);
     BigQueryConfiguration.configureBigQueryOutput(conf,
         projectId,
         outputDatasetId,
@@ -144,8 +167,12 @@ public class DatastoreToBigQuery {
     KindExpression.Builder kind = KindExpression.newBuilder();
     kind.setName(inputKindName);
     q.addKind(kind);
-    q.setFilter(makeFilter(KEY_PROPERTY_NAME, PropertyFilter.Operator.HAS_ANCESTOR,
-        makeValue(makeKey(inputKindName, WordCountSetUp.ANCESTOR_ENTITY_VALUE))));
+    q.setFilter(makeFilter(
+        KEY_PROPERTY_NAME,
+        PropertyFilter.Operator.HAS_ANCESTOR,
+        makeValue(makeKey(
+            inputKindName,
+            WordCountSetUp.ANCESTOR_ENTITY_VALUE))));
     String query = TextFormat.printToString(q);
 
     // Set parameters for DatastoreHadoopInputFormat.

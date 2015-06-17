@@ -1,9 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.google.cloud.hadoop.samples</groupId>
-  <artifactId>hadoop-samples</artifactId>
-  <packaging>jar</packaging>
 
   <parent>
     <artifactId>doc-samples</artifactId>
@@ -12,45 +9,42 @@
     <relativePath>..</relativePath>
   </parent>
 
+  <groupId>com.google.apis-samples</groupId>
+  <artifactId>hadoop-samples</artifactId>
+  <version>1</version>
+  <name>Example for Hadoop on Google Cloud Platform.</name>
+  <build>
+    <finalName>${project.artifactId}-${project.version}</finalName>
+  </build>
 
-    <repositories>
-      <repository>
-          <id>googleapis</id>
-          <url>https://google-api-client-libraries.appspot.com/mavenrepo</url>
-      </repository>
+  <repositories>
+    <repository>
+        <id>project.local</id>
+        <name>Projects that aren't yet in the public maven repo.</name>
+        <url>file:${project.basedir}/repo</url>
+    </repository>
   </repositories>
 
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>com.google.apis</groupId>
+      <artifactId>google-api-services-datastore-protobuf</artifactId>
+      <version>v1beta2-rev1-2.1.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud.bigdataoss</groupId>
+      <artifactId>bigquery-connector</artifactId>
+      <version>0.7.0-hadoop2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud.bigdataoss</groupId>
+      <artifactId>datastore-connector</artifactId>
+      <version>0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-core</artifactId>
+      <version>1.2.1</version>
     </dependency>
   </dependencies>
-
-  <properties>
-    <project.http.version>1.19.0</project.http.version>
-    <project.oauth.version>1.19.0</project.oauth.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-  <build>
-      <sourceDirectory>src/main/java</sourceDirectory>
-      <resources>
-        <resource>
-          <directory>src/main/resources</directory>
-        </resource>
-      </resources>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.2</version>
-        <configuration>
-          <source>5</source>
-          <target>5</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
 </project>

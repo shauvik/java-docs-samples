@@ -30,30 +30,44 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Sample program to set up dataset to run the Hadoop Wordcount example. Clears Entities with given
- * kinds and populates dataset with Entities of given kind.
+ * Sample program to set up dataset to run the Hadoop Wordcount example. Clears
+ * Entities with given kinds and populates dataset with Entities of given kind.
  */
-public class WordCountSetUp {
-  // This is the value of the ancestor entity which will be shared by all the generated entities for
-  // this WordCount setup. This allows the InputFormat of the WordCount job to later query entities
-  // using this ancestor as part of the query filter.
+public final class WordCountSetUp {
+
+  /**
+   * Utility classes should not be constructed.
+   */
+  private WordCountSetUp() { }
+
+  /**
+   * This is the value of the ancestor entity which will be shared by all the
+   * generated entities for this WordCount setup. This allows the InputFormat of
+   * the WordCount job to later query entities using this ancestor as part of
+   * the query filter.
+   */
   static final String ANCESTOR_ENTITY_VALUE = "ancestor";
 
-  // Print sample usage and exit
+  /**
+   * Print sample usage and exit.
+   */
   private static void printUsageAndExit() {
     System.out.println(
-        "Usage: hadoop jar datastore_wordcountsetup.jar [datasetId] [inputKindName] "
-            + "[outputKindName] [fileName].  " + "Please enter all parameters");
+        "Usage: hadoop jar datastore_wordcountsetup.jar [datasetId] "
+        + "[inputKindName] [outputKindName] [fileName]. "
+        + "Please enter all parameters");
     System.exit(1);
   }
 
   /**
-   * Clears and then populates the Datastore. Will delete all entities (of input and output kind) in
-   * current Datastore
+   * Clears and then populates the Datastore. Will delete all entities (of input
+   * and output kind) in current Datastore
    *
-   * @param args a String[] containing your datasetId
+   * @param args @see #printUsageAndExit
+   * @throws Exception if an unrecoverable error occurs.
    */
-  public static void main(String[] args) throws Exception {
+  @SuppressWarnings("checkstyle:magicnumber")
+  public static void main(final String[] args) throws Exception {
     // Check all args entered.
     if (args.length != 4) {
       printUsageAndExit();
@@ -69,11 +83,13 @@ public class WordCountSetUp {
     try {
       // Setup the connection to Google Cloud Datastore and infer credentials
       // from the environment.
-      DatastoreHadoopHelper helper = new DatastoreHadoopHelper(new Configuration());
+      DatastoreHadoopHelper helper = new DatastoreHadoopHelper(
+          new Configuration());
       ds = helper.createDatastore(datasetId);
 
     } catch (IOException exception) {
-      System.err.println("I/O error connecting to the datastore: " + exception.getMessage());
+      System.err.println(
+          "I/O error connecting to the datastore: " + exception.getMessage());
       System.exit(1);
     }
     // Delete INPUT_KIND_NAME and OUTPUT_KIND_NAME Entities.
@@ -94,7 +110,7 @@ public class WordCountSetUp {
    * @param kind the Kind of Entities to delete.
    * @param ds Datastore to use.
    */
-  public static void deleteAllOfKind(String kind, Datastore ds) {
+  public static void deleteAllOfKind(final String kind, final Datastore ds) {
     // Create a query for all Entities of kind Line.
     Query.Builder q = Query.newBuilder();
     KindExpression.Builder kindBuilder = KindExpression.newBuilder();
@@ -121,15 +137,18 @@ public class WordCountSetUp {
         Mutation.Builder mutation = Mutation.newBuilder();
         mutation.addDelete(result.get(i).getEntity().getKey());
         try {
-          ds.commit(bwRequest.setMutation(mutation).setMode(CommitRequest.Mode.NON_TRANSACTIONAL)
+          ds.commit(bwRequest.setMutation(mutation)
+              .setMode(CommitRequest.Mode.NON_TRANSACTIONAL)
               .build());
         } catch (DatastoreException e) {
-          System.out.println(e.getMessage() + Arrays.toString(e.getStackTrace()));
+          System.out.println(
+              e.getMessage() + Arrays.toString(e.getStackTrace()));
         }
       }
 
       // If there are more results, get new results and delete these.
-      if (response.getBatch().getMoreResults() == QueryResultBatch.MoreResultsType.NOT_FINISHED) {
+      if (response.getBatch().getMoreResults()
+          == QueryResultBatch.MoreResultsType.NOT_FINISHED) {
         ByteString endCursor = response.getBatch().getEndCursor();
         q.setStartCursor(endCursor);
         try {
@@ -144,12 +163,19 @@ public class WordCountSetUp {
   }
 
   /**
+   * How long to wait between checks.
+   */
+  private static final int POLL_INTERVAL = 10000;
+
+  /**
    * Checks all Entites of Kind kind are deleted.
    *
    * @param kind the Kind of Entities to check.
    * @param ds Datastore to use.
+   * @throws InterruptedException if the poll is interrupted.
    */
-  public static void checkDeleted(String kind, Datastore ds) throws InterruptedException {
+  public static void checkDeleted(final String kind, final Datastore ds)
+      throws InterruptedException {
     // Check that all records have been deleted.
     int count = 0;
     while (count > 1) {
@@ -158,7 +184,8 @@ public class WordCountSetUp {
       KindExpression.Builder kindBuilder = KindExpression.newBuilder();
       kindBuilder.setName(kind);
       q.addKind(kindBuilder);
-      RunQueryRequest request = RunQueryRequest.newBuilder().setQuery(q).build();
+      RunQueryRequest request = RunQueryRequest.newBuilder().setQuery(q)
+          .build();
       RunQueryResponse response = null;
       try {
         response = ds.runQuery(request);
@@ -168,7 +195,7 @@ public class WordCountSetUp {
       List<EntityResult> result = response.getBatch().getEntityResultList();
       count = result.size();
       System.out.println("Waiting for Datastore to update! Records:" + count);
-      Thread.sleep(10000);
+      Thread.sleep(POLL_INTERVAL);
     }
   }
 
@@ -178,8 +205,12 @@ public class WordCountSetUp {
    * @param kind the Kind of Entities to delete.
    * @param fileName the name of the file to use.
    * @param ds Datastore to use.
+   *
+   * @throws IOException if there's an error reading the file.
+   * @throws DatastoreException if there's an error writing to the datastore.
    */
-  public static void populateDatastoreFromFile(String kind, String fileName, Datastore ds)
+  public static void populateDatastoreFromFile(
+      final String kind, final String fileName, final Datastore ds)
       throws IOException, DatastoreException {
     // Get BufferedReader for file.
     FileInputStream fstream = new FileInputStream(fileName);
@@ -197,9 +228,11 @@ public class WordCountSetUp {
       String line = "";
       int count = 0;
       while ((line = br.readLine()) != null) {
-        Entity.Builder e = Entity.newBuilder().setKey(makeKey(ancestor, kind, count + 1));
+        Entity.Builder e = Entity.newBuilder().setKey(
+            makeKey(ancestor, kind, count + 1));
         Value.Builder value = Value.newBuilder().setStringValue(line);
-        e.addProperty(Property.newBuilder().setName("line").setValue(value.setIndexed(false)));
+        e.addProperty(Property.newBuilder().setName("line").setValue(
+            value.setIndexed(false)));
         mutation.addInsert(e);
         count++;
       }
@@ -207,6 +240,7 @@ public class WordCountSetUp {
       br.close();
     }
     // Commit request to Datastore.
-    ds.commit(request.setMutation(mutation).setMode(CommitRequest.Mode.NON_TRANSACTIONAL).build());
+    ds.commit(request.setMutation(mutation).setMode(
+        CommitRequest.Mode.NON_TRANSACTIONAL).build());
   }
-
+}
